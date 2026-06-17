@@ -10,7 +10,6 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
     case serverError(statusCode: Int)
     case decodingFailed(String)
     case networkUnavailable
-    case unknown(String)
 
     public var errorDescription: String? {
         switch self {
@@ -38,8 +37,6 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
             return "Failed to decode response: \(detail)"
         case .networkUnavailable:
             return "Network unavailable"
-        case .unknown(let detail):
-            return "Unexpected error: \(detail)"
         }
     }
 
@@ -54,7 +51,6 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
         case (.serverError(let a), .serverError(let b)): return a == b
         case (.decodingFailed(let a), .decodingFailed(let b)): return a == b
         case (.networkUnavailable, .networkUnavailable): return true
-        case (.unknown(let a), .unknown(let b)): return a == b
         default: return false
         }
     }

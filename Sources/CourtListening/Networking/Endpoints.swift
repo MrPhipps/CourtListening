@@ -22,10 +22,10 @@ enum Endpoints {
 
     static func dockets(query: DocketQuery) -> URL {
         var items: [URLQueryItem] = []
-        if let term = query.searchTerm { items.append(URLQueryItem(name: "search", value: term)) }
+        if let term = query.searchTerm { items.append(URLQueryItem(name: "search", value: term.rawValue)) }
         if let court = query.courtID { items.append(URLQueryItem(name: "court_id", value: court.rawValue)) }
-        if let name = query.caseName { items.append(URLQueryItem(name: "case_name", value: name)) }
-        if let number = query.docketNumber { items.append(URLQueryItem(name: "docket_number", value: number)) }
+        if let name = query.caseName { items.append(URLQueryItem(name: "case_name", value: name.rawValue)) }
+        if let number = query.docketNumber { items.append(URLQueryItem(name: "docket_number", value: number.rawValue)) }
         if let cursor = query.cursor { items.append(URLQueryItem(name: "cursor", value: cursor.rawValue)) }
         if let page = query.page { items.append(URLQueryItem(name: "page", value: "\(page)")) }
         var components = URLComponents(url: base.appending(path: "dockets/"), resolvingAgainstBaseURL: false)!
@@ -40,7 +40,7 @@ enum Endpoints {
     static func opinions(clusterID: ClusterID, cursor: Cursor? = nil) -> URL {
         var components = URLComponents(url: base.appending(path: "opinions/"), resolvingAgainstBaseURL: false)!
         var items = [URLQueryItem(name: "cluster", value: "\(clusterID.rawValue)")]
-        if let cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
+        if let cursor { items.append(URLQueryItem(name: "cursor", value: cursor.rawValue)) }
         components.queryItems = items
         return components.url!
     }

@@ -1,16 +1,16 @@
 public struct DocketQuery: Sendable, Hashable, Codable {
-    public var searchTerm: String?
+    public var searchTerm: NonEmptyString?
     public var courtID: CourtID?
-    public var caseName: String?
-    public var docketNumber: String?
+    public var caseName: NonEmptyString?
+    public var docketNumber: NonEmptyString?
     public var cursor: Cursor?
     public var page: Int?
 
     public init(
-        searchTerm: String? = nil,
+        searchTerm: NonEmptyString? = nil,
         courtID: CourtID? = nil,
-        caseName: String? = nil,
-        docketNumber: String? = nil,
+        caseName: NonEmptyString? = nil,
+        docketNumber: NonEmptyString? = nil,
         cursor: Cursor? = nil,
         page: Int? = nil
     ) {

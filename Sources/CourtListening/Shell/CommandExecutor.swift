@@ -20,7 +20,8 @@ extension CourtListenerRunner {
             // Network-level failure — request never reached the server
             return [.commandFailed(mapNetworkError(error), command)]
         } catch {
-            return [.commandFailed(.unknown(error.localizedDescription), command)]
+            // DecodingError and other Foundation types — server was reached
+            return [.usageRecorded(at: requestedAt), .commandFailed(.decodingFailed(error.localizedDescription), command)]
         }
     }
 
@@ -113,7 +114,13 @@ private func mapNetworkError(_ error: NetworkError) -> CourtListenerError {
         return .networkUnavailable
     case .requestFailed(let urlError) where urlError.code == .networkConnectionLost:
         return .networkUnavailable
-    default:
-        return .unknown(error.localizedDescription)
+    case .requestFailed:
+        return .networkUnavailable
+    case .unexpectedStatusCode(let code):
+        return .serverError(statusCode: code)
+    case .noData:
+        return .decodingFailed("Empty response body")
+    case .invalidURL(let url):
+        return .decodingFailed("Invalid endpoint URL: \(url)")
     }
 }
