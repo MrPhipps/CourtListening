@@ -1,17 +1,13 @@
 import Foundation
 
 /// A non-empty, non-whitespace-only string. Rejects blank values at construction time.
-public struct NonEmptyString: RawRepresentable, Sendable, Codable, Hashable {
+public struct NonEmptyString: Sendable, Codable, Hashable {
     public let rawValue: String
 
     public init(_ rawValue: String) throws {
         guard !rawValue.trimmingCharacters(in: .whitespaces).isEmpty
         else { throw CourtListenerError.invalidIdentifier("String cannot be blank") }
         self.rawValue = rawValue
-    }
-
-    public init(rawValue: String) throws {
-        try self.init(rawValue)
     }
 
     public init(from decoder: any Decoder) throws {

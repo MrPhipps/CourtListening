@@ -1,7 +1,7 @@
 import Foundation
 
 /// A validated email address. Blank values decode to `nil`; invalid formats throw.
-public struct EmailAddress: RawRepresentable, Sendable, Codable, Hashable {
+public struct EmailAddress: Sendable, Codable, Hashable {
     public let rawValue: String
 
     public init(_ rawValue: String) throws {
@@ -9,10 +9,6 @@ public struct EmailAddress: RawRepresentable, Sendable, Codable, Hashable {
         guard !trimmed.isEmpty, trimmed.contains("@"), trimmed.contains(".")
         else { throw CourtListenerError.invalidIdentifier("EmailAddress must contain '@' and '.'") }
         self.rawValue = trimmed
-    }
-
-    public init(rawValue: String) throws {
-        try self.init(rawValue)
     }
 
     public init(from decoder: any Decoder) throws {

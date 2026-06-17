@@ -2,7 +2,7 @@ import Foundation
 
 /// An opaque pagination cursor returned by the CourtListener API.
 /// Cursors are base64-encoded offsets; blank values are rejected at construction time.
-public struct Cursor: RawRepresentable, Sendable, Codable, Hashable {
+public struct Cursor: Sendable, Codable, Hashable {
     public let rawValue: String
 
     public init(_ rawValue: String) throws {
@@ -10,10 +10,6 @@ public struct Cursor: RawRepresentable, Sendable, Codable, Hashable {
         guard !trimmed.isEmpty
         else { throw CourtListenerError.invalidIdentifier("Cursor cannot be blank") }
         self.rawValue = trimmed
-    }
-
-    public init(rawValue: String) throws {
-        try self.init(rawValue)
     }
 
     public init(from decoder: any Decoder) throws {
