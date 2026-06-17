@@ -1,0 +1,29 @@
+import Foundation
+
+/// A validated, normalised phone number. Stored as digits and leading '+' only.
+/// Requires at least 7 digits after stripping non-numeric characters.
+public struct PhoneNumber: RawRepresentable, Sendable, Codable, Hashable {
+    public let rawValue: String
+
+    public init(_ rawValue: String) throws {
+        let normalised = rawValue.filter { $0.isNumber || ($0 == "+" && rawValue.firstIndex(of: "+") == rawValue.startIndex) }
+        let digitCount = normalised.filter(\.isNumber).count
+        guard digitCount >= 7
+        else { throw CourtListenerError.invalidIdentifier("PhoneNumber must contain at least 7 digits") }
+        self.rawValue = normalised
+    }
+
+    public init(rawValue: String) throws {
+        try self.init(rawValue)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        try self.init(raw)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
