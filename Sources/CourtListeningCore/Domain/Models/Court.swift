@@ -39,6 +39,44 @@ public struct Court: Sendable, Codable, Hashable {
         case dateModified = "date_modified"
     }
 
+    public init(
+        resourceURI: URL,
+        id: CourtID,
+        shortName: String,
+        fullName: String,
+        citationString: String,
+        jurisdiction: Jurisdiction,
+        inUse: Bool,
+        hasOpinionScraper: Bool,
+        hasOralArgumentScraper: Bool,
+        position: Double,
+        websiteURL: URL?,
+        startDate: String?,
+        endDate: String?,
+        parentCourt: URL?,
+        appealsTo: [URL],
+        fjcCourtID: String,
+        dateModified: Date
+    ) {
+        self.resourceURI = resourceURI
+        self.id = id
+        self.shortName = shortName
+        self.fullName = fullName
+        self.citationString = citationString
+        self.jurisdiction = jurisdiction
+        self.inUse = inUse
+        self.hasOpinionScraper = hasOpinionScraper
+        self.hasOralArgumentScraper = hasOralArgumentScraper
+        self.position = position
+        self.websiteURL = websiteURL
+        self.startDate = startDate
+        self.endDate = endDate
+        self.parentCourt = parentCourt
+        self.appealsTo = appealsTo
+        self.fjcCourtID = fjcCourtID
+        self.dateModified = dateModified
+    }
+
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         resourceURI = try c.decode(URL.self, forKey: .resourceURI)
