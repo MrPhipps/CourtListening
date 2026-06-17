@@ -1,5 +1,5 @@
 public struct PaginationState: Sendable, Hashable {
-    public var nextCursor: String?
+    public var nextCursor: Cursor?
     public var nextPage: Int?
     public var totalCount: Int?
 

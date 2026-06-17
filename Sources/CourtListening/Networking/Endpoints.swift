@@ -8,10 +8,10 @@ enum Endpoints {
         base.appending(path: "courts/\(id.rawValue)/")
     }
 
-    static func courts(cursor: String? = nil) -> URL {
+    static func courts(cursor: Cursor? = nil) -> URL {
         var components = URLComponents(url: base.appending(path: "courts/"), resolvingAgainstBaseURL: false)!
         if let cursor {
-            components.queryItems = [URLQueryItem(name: "cursor", value: cursor)]
+            components.queryItems = [URLQueryItem(name: "cursor", value: cursor.rawValue)]
         }
         return components.url!
     }
@@ -26,7 +26,7 @@ enum Endpoints {
         if let court = query.courtID { items.append(URLQueryItem(name: "court_id", value: court.rawValue)) }
         if let name = query.caseName { items.append(URLQueryItem(name: "case_name", value: name)) }
         if let number = query.docketNumber { items.append(URLQueryItem(name: "docket_number", value: number)) }
-        if let cursor = query.cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
+        if let cursor = query.cursor { items.append(URLQueryItem(name: "cursor", value: cursor.rawValue)) }
         if let page = query.page { items.append(URLQueryItem(name: "page", value: "\(page)")) }
         var components = URLComponents(url: base.appending(path: "dockets/"), resolvingAgainstBaseURL: false)!
         if !items.isEmpty { components.queryItems = items }
@@ -37,7 +37,7 @@ enum Endpoints {
         base.appending(path: "clusters/\(id.rawValue)/")
     }
 
-    static func opinions(clusterID: ClusterID, cursor: String? = nil) -> URL {
+    static func opinions(clusterID: ClusterID, cursor: Cursor? = nil) -> URL {
         var components = URLComponents(url: base.appending(path: "opinions/"), resolvingAgainstBaseURL: false)!
         var items = [URLQueryItem(name: "cluster", value: "\(clusterID.rawValue)")]
         if let cursor { items.append(URLQueryItem(name: "cursor", value: cursor)) }
@@ -49,10 +49,10 @@ enum Endpoints {
         base.appending(path: "people/\(id.rawValue)/")
     }
 
-    static func people(cursor: String? = nil) -> URL {
+    static func people(cursor: Cursor? = nil) -> URL {
         var components = URLComponents(url: base.appending(path: "people/"), resolvingAgainstBaseURL: false)!
         if let cursor {
-            components.queryItems = [URLQueryItem(name: "cursor", value: cursor)]
+            components.queryItems = [URLQueryItem(name: "cursor", value: cursor.rawValue)]
         }
         return components.url!
     }

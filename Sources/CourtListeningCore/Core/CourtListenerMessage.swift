@@ -1,3 +1,5 @@
+import Foundation
+
 public enum CourtListenerMessage: Sendable {
     // MARK: - Infrastructure messages (emitted by the shell, not by callers)
 
@@ -6,18 +8,20 @@ public enum CourtListenerMessage: Sendable {
     case usageRecorded(at: Date)
 
     // MARK: - Intent messages (sent by callers)
+
     case fetchCourt(CourtID)
-    case listCourts(cursor: String?)
+    case listCourts(cursor: Cursor?)
     case fetchDocket(DocketID)
     case searchDockets(DocketQuery)
     case fetchCluster(ClusterID)
-    case listOpinions(clusterID: ClusterID, cursor: String?)
+    case listOpinions(clusterID: ClusterID, cursor: Cursor?)
     case fetchPerson(PersonID)
-    case listPeople(cursor: String?)
+    case listPeople(cursor: Cursor?)
     case fetchParties(docketID: DocketID)
     case fetchAttorneys(docketID: DocketID)
 
     // MARK: - Response messages (fed back from the shell after executing commands)
+
     case courtReceived(Court)
     case courtsPageReceived(PaginatedResponse<Court>)
     case docketReceived(Docket)
@@ -28,5 +32,10 @@ public enum CourtListenerMessage: Sendable {
     case peoplePageReceived(PaginatedResponse<Person>)
     case partiesReceived(docketID: DocketID, [Party])
     case attorneysReceived(docketID: DocketID, [Attorney])
-    case failed(CourtListenerError)
+
+    // MARK: - Failure messages
+
+    /// A specific command failed. Only that command's entry in activeCommands is cleared.
+    /// Prefer this over a generic failure whenever the failing command is known (always in the shell).
+    case commandFailed(CourtListenerError, CourtListenerCommand)
 }

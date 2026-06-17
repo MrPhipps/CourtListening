@@ -70,11 +70,13 @@ print("Courts stored: \(afterReceive.courts.count)")
 print("SCOTUS short name: \(afterReceive.courts[scotusID]?.shortName ?? "not found")")
 print("Active commands cleared: \(afterReceive.activeCommands.isEmpty)")
 
-// Error states are explicit model transitions.
-let (errorModel, _) = update(message: .failed(.unauthorized), model: afterReceive)
-print("\n— After .failed(.unauthorized) —")
+// Error states are explicit model transitions. commandFailed carries the specific
+// command that failed, so update() removes only that command from activeCommands.
+let failingCommand = CourtListenerCommand.fetchCourt(scotusID)
+let (errorModel, _) = update(message: .commandFailed(.unauthorized, failingCommand), model: afterReceive)
+print("\n— After .commandFailed(.unauthorized, .fetchCourt) —")
 print("Last error: \(errorModel.lastError?.localizedDescription ?? "none")")
-print("Active commands: \(errorModel.activeCommands.count) (all cleared)")
+print("Active commands: \(errorModel.activeCommands.count) (only the failed command cleared)")
 
 // Reset and demonstrate pagination flow.
 let page = PaginatedResponse(
@@ -118,7 +120,7 @@ if let scotusLive = liveModel.courts[scotusID] {
 
 // Use the next cursor from the previous fetch to load page 2.
 if let cursor = (await runner.model).courtsPagination.nextCursor {
-    print("\n— Fetching page 2 (cursor: \(cursor)) —")
+    print("\n— Fetching page 2 (cursor: \(cursor.rawValue)) —")
     await runner.handle(message: .listCourts(cursor: cursor))
     let afterPage2 = await runner.model
     print("Courts accumulated: \(afterPage2.courts.count)")

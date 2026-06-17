@@ -5,7 +5,7 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
     case invalidToken
     case unauthorized
     case forbidden
-    case notFound(String)
+    case notFound(URL?)
     case rateLimited(until: Date?)
     case serverError(statusCode: Int)
     case decodingFailed(String)
@@ -22,8 +22,8 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
             return "Authentication required — provide a valid API token"
         case .forbidden:
             return "Access denied for this resource"
-        case .notFound(let resource):
-            return "Resource not found: \(resource)"
+        case .notFound(let url):
+            return "Resource not found: \(url?.absoluteString ?? "unknown")"
         case .rateLimited(let until):
             if let until {
                 let formatter = DateFormatter()

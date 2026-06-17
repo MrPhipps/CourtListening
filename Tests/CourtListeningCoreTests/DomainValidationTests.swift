@@ -131,6 +131,37 @@ final class DomainValidationTests: XCTestCase {
         XCTAssertThrowsError(try AttorneyID(0))
     }
 
+    // MARK: - Cursor
+
+    func testCursorRejectsEmptyString() {
+        XCTAssertThrowsError(try Cursor("")) { error in
+            guard case CourtListenerError.invalidIdentifier = error else {
+                XCTFail("Expected .invalidIdentifier, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testCursorRejectsWhitespaceOnly() {
+        XCTAssertThrowsError(try Cursor("   "))
+    }
+
+    func testCursorAcceptsBase64Value() throws {
+        let cursor = try Cursor("cD0xNjIyMw==")
+        XCTAssertEqual(cursor.rawValue, "cD0xNjIyMw==")
+    }
+
+    func testCursorTrimsWhitespace() throws {
+        let cursor = try Cursor("  cD0xNjIyMw==  ")
+        XCTAssertEqual(cursor.rawValue, "cD0xNjIyMw==")
+    }
+
+    func testCursorEquality() throws {
+        let a = try Cursor("cD0xNjIyMw==")
+        let b = try Cursor("cD0xNjIyMw==")
+        XCTAssertEqual(a, b)
+    }
+
     // MARK: - EmailAddress
 
     func testEmailAddressRejectsEmptyString() {

@@ -3,7 +3,7 @@ public struct DocketQuery: Sendable, Hashable, Codable {
     public var courtID: CourtID?
     public var caseName: String?
     public var docketNumber: String?
-    public var cursor: String?
+    public var cursor: Cursor?
     public var page: Int?
 
     public init(
@@ -11,7 +11,7 @@ public struct DocketQuery: Sendable, Hashable, Codable {
         courtID: CourtID? = nil,
         caseName: String? = nil,
         docketNumber: String? = nil,
-        cursor: String? = nil,
+        cursor: Cursor? = nil,
         page: Int? = nil
     ) {
         self.searchTerm = searchTerm

@@ -15,12 +15,12 @@ extension CourtListenerRunner {
             return messages
         } catch let error as CourtListenerError {
             // HTTP reached the server — record usage regardless of status code
-            return [.usageRecorded(at: requestedAt), .failed(error)]
+            return [.usageRecorded(at: requestedAt), .commandFailed(error, command)]
         } catch let error as NetworkError {
             // Network-level failure — request never reached the server
-            return [.failed(mapNetworkError(error))]
+            return [.commandFailed(mapNetworkError(error), command)]
         } catch {
-            return [.failed(.unknown(error.localizedDescription))]
+            return [.commandFailed(.unknown(error.localizedDescription), command)]
         }
     }
 
@@ -89,7 +89,7 @@ extension CourtListenerRunner {
         case 403:
             throw CourtListenerError.forbidden
         case 404:
-            throw CourtListenerError.notFound(response.url?.path ?? "unknown")
+            throw CourtListenerError.notFound(response.url)
         case 429:
             // CL returns {"wait_until": "<ISO-8601 datetime>"} in the 429 body
             let until = (try? ResponseDecoder.shared.decode(RateLimitBody.self, from: data))?.waitUntil

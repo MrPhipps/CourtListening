@@ -94,7 +94,7 @@ public func update(
             nextPage: page.nextPage,
             totalCount: page.count.total ?? m.courtsPagination.totalCount
         )
-        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listCourts = $0 { return true }; return false })
+        m.activeCommands = m.activeCommands.removingAll { if case .listCourts = $0 { return true }; return false }
         return (m, [])
 
     case .docketReceived(let docket):
@@ -109,7 +109,7 @@ public func update(
             nextPage: page.nextPage,
             totalCount: page.count.total ?? m.docketsPagination.totalCount
         )
-        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .searchDockets = $0 { return true }; return false })
+        m.activeCommands = m.activeCommands.removingAll { if case .searchDockets = $0 { return true }; return false }
         return (m, [])
 
     case .clusterReceived(let cluster):
@@ -124,7 +124,7 @@ public func update(
             nextPage: page.nextPage,
             totalCount: page.count.total ?? m.opinionsPagination.totalCount
         )
-        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listOpinions = $0 { return true }; return false })
+        m.activeCommands = m.activeCommands.removingAll { if case .listOpinions = $0 { return true }; return false }
         return (m, [])
 
     case .personReceived(let person):
@@ -139,7 +139,7 @@ public func update(
             nextPage: page.nextPage,
             totalCount: page.count.total ?? m.peoplePagination.totalCount
         )
-        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listPeople = $0 { return true }; return false })
+        m.activeCommands = m.activeCommands.removingAll { if case .listPeople = $0 { return true }; return false }
         return (m, [])
 
     case .partiesReceived(let docketID, let parties):
@@ -152,9 +152,11 @@ public func update(
         m.activeCommands.remove(.fetchAttorneys(docketID: docketID))
         return (m, [])
 
-    case .failed(let error):
+    // MARK: - Failure
+
+    case .commandFailed(let error, let command):
         m.lastError = error
-        m.activeCommands.removeAll()
+        m.activeCommands.remove(command)
         return (m, [])
     }
 }
@@ -162,7 +164,7 @@ public func update(
 // MARK: - Helpers
 
 private extension Set {
-    func removingAll(ofCase predicate: (Element) -> Bool) -> Set {
+    func removingAll(where predicate: (Element) -> Bool) -> Set {
         filter { !predicate($0) }
     }
 }

@@ -68,8 +68,8 @@ final class UpdateTests: XCTestCase {
         XCTAssertEqual(commands, [.listCourts(cursor: nil)])
     }
 
-    func testListCourtsWithCursorPassesCursor() {
-        let cursor = "abc123"
+    func testListCourtsWithCursorPassesCursor() throws {
+        let cursor = try Cursor("cD0xNjIyMw==")
         let (newModel, commands) = update(message: .listCourts(cursor: cursor), model: .initial)
         XCTAssertTrue(newModel.activeCommands.contains(.listCourts(cursor: cursor)))
         XCTAssertEqual(commands, [.listCourts(cursor: cursor)])
@@ -93,17 +93,27 @@ final class UpdateTests: XCTestCase {
         XCTAssertTrue(commands.isEmpty)
     }
 
-    // MARK: - failed
+    // MARK: - commandFailed
 
-    func testFailedSetsLastError() {
-        let (newModel, commands) = update(message: .failed(.unauthorized), model: .initial)
+    func testCommandFailedSetsLastError() throws {
+        let command = CourtListenerCommand.listCourts(cursor: nil)
+        let (newModel, commands) = update(message: .commandFailed(.unauthorized, command), model: .initial)
         XCTAssertEqual(newModel.lastError, .unauthorized)
         XCTAssertTrue(commands.isEmpty)
     }
 
-    func testFailedClearsActiveCommands() throws {
-        let (newModel, _) = update(message: .failed(.networkUnavailable), model: .TestVariants.loadingCourts)
-        XCTAssertTrue(newModel.activeCommands.isEmpty)
+    func testCommandFailedRemovesOnlyThatCommand() throws {
+        let scotusID = try CourtID("scotus")
+        let personID = try PersonID(1781)
+
+        var model = CourtListenerModel.initial
+        (model, _) = update(message: .fetchCourt(scotusID), model: model)
+        (model, _) = update(message: .fetchPerson(personID), model: model)
+        XCTAssertEqual(model.activeCommands.count, 2)
+
+        (model, _) = update(message: .commandFailed(.networkUnavailable, .fetchCourt(id: scotusID)), model: model)
+        XCTAssertEqual(model.activeCommands.count, 1, "Only the failed command should be removed")
+        XCTAssertTrue(model.activeCommands.contains(.fetchPerson(id: personID)), "Unrelated command should remain")
     }
 
     // MARK: - Chained transitions
@@ -194,7 +204,7 @@ final class UpdateTests: XCTestCase {
     // MARK: - Pagination cursor removal
 
     func testListCourtsCommandClearedAfterPageReceived() throws {
-        let cursor = "cD0yMDA="
+        let cursor = try Cursor("cD0yMDA=")
         var model = CourtListenerModel.initial
         (model, _) = update(message: .listCourts(cursor: cursor), model: model)
         XCTAssertTrue(model.activeCommands.contains(.listCourts(cursor: cursor)))

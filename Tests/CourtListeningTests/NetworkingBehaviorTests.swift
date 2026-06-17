@@ -40,8 +40,8 @@ final class NetworkingBehaviorTests: XCTestCase {
     }
 
     func testCursorPaginationAppendsQueryParameter() async throws {
-        let cursor = "cD0xNjIyMw=="
-        let expectedURL = URL(string: "https://www.courtlistener.com/api/rest/v4/courts/?cursor=\(cursor)")!
+        let cursor = try Cursor("cD0xNjIyMw==")
+        let expectedURL = URL(string: "https://www.courtlistener.com/api/rest/v4/courts/?cursor=\(cursor.rawValue)")!
         let fixtureData = try loadFixture("courts-list")
         let capture = RequestCapture()
         let transport = CourtListenerTransport.spy(capture: capture, responses: [expectedURL: fixtureData])
@@ -53,7 +53,7 @@ final class NetworkingBehaviorTests: XCTestCase {
         let requestURL = try XCTUnwrap(requests.first?.url)
         let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false)
         let cursorItem = components?.queryItems?.first(where: { $0.name == "cursor" })
-        XCTAssertEqual(cursorItem?.value, cursor)
+        XCTAssertEqual(cursorItem?.value, cursor.rawValue)
     }
 
     // MARK: - HTTP method
