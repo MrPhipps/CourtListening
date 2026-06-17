@@ -17,12 +17,12 @@ public actor CourtListenerRunner {
     public func handle(message: CourtListenerMessage) async {
         let (newModel, commands) = update(message: message, model: model)
         model = newModel
-        await withTaskGroup(of: CourtListenerMessage?.self) { group in
+        await withTaskGroup(of: [CourtListenerMessage].self) { group in
             for command in commands {
                 group.addTask { await self.execute(command) }
             }
-            for await response in group {
-                if let response {
+            for await responses in group {
+                for response in responses {
                     await handle(message: response)
                 }
             }

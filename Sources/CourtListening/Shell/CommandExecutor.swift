@@ -2,15 +2,25 @@ import Foundation
 import CourtListeningCore
 
 extension CourtListenerRunner {
-    func execute(_ command: CourtListenerCommand) async -> CourtListenerMessage? {
+
+    /// Executes a command and returns all resulting messages, including a `usageRecorded`
+    /// message for every request that reached the server (including 4xx/5xx responses).
+    /// Pure network failures (no server contact) do not produce a `usageRecorded` message.
+    func execute(_ command: CourtListenerCommand) async -> [CourtListenerMessage] {
+        let requestedAt = Date()
         do {
-            return try await executeOrThrow(command)
+            let result = try await executeOrThrow(command)
+            var messages: [CourtListenerMessage] = [.usageRecorded(at: requestedAt)]
+            if let result { messages.append(result) }
+            return messages
         } catch let error as CourtListenerError {
-            return .failed(error)
+            // HTTP reached the server — record usage regardless of status code
+            return [.usageRecorded(at: requestedAt), .failed(error)]
         } catch let error as NetworkError {
-            return .failed(mapNetworkError(error))
+            // Network-level failure — request never reached the server
+            return [.failed(mapNetworkError(error))]
         } catch {
-            return .failed(.unknown(error.localizedDescription))
+            return [.failed(.unknown(error.localizedDescription))]
         }
     }
 
@@ -18,62 +28,44 @@ extension CourtListenerRunner {
         switch command {
 
         case .fetchCourt(let id):
-            let url = Endpoints.court(id)
-            let data = try await fetch(url)
-            let court = try ResponseDecoder.shared.decode(Court.self, from: data)
-            return .courtReceived(court)
+            let data = try await fetch(Endpoints.court(id))
+            return .courtReceived(try ResponseDecoder.shared.decode(Court.self, from: data))
 
         case .listCourts(let cursor):
-            let url = Endpoints.courts(cursor: cursor)
-            let data = try await fetch(url)
-            let page = try ResponseDecoder.shared.decode(PaginatedResponse<Court>.self, from: data)
-            return .courtsPageReceived(page)
+            let data = try await fetch(Endpoints.courts(cursor: cursor))
+            return .courtsPageReceived(try ResponseDecoder.shared.decode(PaginatedResponse<Court>.self, from: data))
 
         case .fetchDocket(let id):
-            let url = Endpoints.docket(id)
-            let data = try await fetch(url)
-            let docket = try ResponseDecoder.shared.decode(Docket.self, from: data)
-            return .docketReceived(docket)
+            let data = try await fetch(Endpoints.docket(id))
+            return .docketReceived(try ResponseDecoder.shared.decode(Docket.self, from: data))
 
         case .searchDockets(let query):
-            let url = Endpoints.dockets(query: query)
-            let data = try await fetch(url)
-            let page = try ResponseDecoder.shared.decode(PaginatedResponse<Docket>.self, from: data)
-            return .docketsPageReceived(page)
+            let data = try await fetch(Endpoints.dockets(query: query))
+            return .docketsPageReceived(try ResponseDecoder.shared.decode(PaginatedResponse<Docket>.self, from: data))
 
         case .fetchCluster(let id):
-            let url = Endpoints.cluster(id)
-            let data = try await fetch(url)
-            let cluster = try ResponseDecoder.shared.decode(OpinionCluster.self, from: data)
-            return .clusterReceived(cluster)
+            let data = try await fetch(Endpoints.cluster(id))
+            return .clusterReceived(try ResponseDecoder.shared.decode(OpinionCluster.self, from: data))
 
         case .listOpinions(let clusterID, let cursor):
-            let url = Endpoints.opinions(clusterID: clusterID, cursor: cursor)
-            let data = try await fetch(url)
-            let page = try ResponseDecoder.shared.decode(PaginatedResponse<Opinion>.self, from: data)
-            return .opinionsPageReceived(page)
+            let data = try await fetch(Endpoints.opinions(clusterID: clusterID, cursor: cursor))
+            return .opinionsPageReceived(try ResponseDecoder.shared.decode(PaginatedResponse<Opinion>.self, from: data))
 
         case .fetchPerson(let id):
-            let url = Endpoints.person(id)
-            let data = try await fetch(url)
-            let person = try ResponseDecoder.shared.decode(Person.self, from: data)
-            return .personReceived(person)
+            let data = try await fetch(Endpoints.person(id))
+            return .personReceived(try ResponseDecoder.shared.decode(Person.self, from: data))
 
         case .listPeople(let cursor):
-            let url = Endpoints.people(cursor: cursor)
-            let data = try await fetch(url)
-            let page = try ResponseDecoder.shared.decode(PaginatedResponse<Person>.self, from: data)
-            return .peoplePageReceived(page)
+            let data = try await fetch(Endpoints.people(cursor: cursor))
+            return .peoplePageReceived(try ResponseDecoder.shared.decode(PaginatedResponse<Person>.self, from: data))
 
         case .fetchParties(let docketID):
-            let url = Endpoints.parties(docketID: docketID)
-            let data = try await fetch(url)
+            let data = try await fetch(Endpoints.parties(docketID: docketID))
             let page = try ResponseDecoder.shared.decode(PaginatedResponse<Party>.self, from: data)
             return .partiesReceived(docketID: docketID, page.results)
 
         case .fetchAttorneys(let docketID):
-            let url = Endpoints.attorneys(docketID: docketID)
-            let data = try await fetch(url)
+            let data = try await fetch(Endpoints.attorneys(docketID: docketID))
             let page = try ResponseDecoder.shared.decode(PaginatedResponse<Attorney>.self, from: data)
             return .attorneysReceived(docketID: docketID, page.results)
         }
@@ -99,15 +91,20 @@ extension CourtListenerRunner {
         case 404:
             throw CourtListenerError.notFound(response.url?.path ?? "unknown")
         case 429:
-            let retryAfter = response.value(forHTTPHeaderField: "Retry-After")
-                .flatMap { TimeInterval($0) }
-            throw CourtListenerError.rateLimited(retryAfter: retryAfter)
+            // CL returns {"wait_until": "<ISO-8601 datetime>"} in the 429 body
+            let until = (try? ResponseDecoder.shared.decode(RateLimitBody.self, from: data))?.waitUntil
+            throw CourtListenerError.rateLimited(until: until)
         case 500...599:
             throw CourtListenerError.serverError(statusCode: response.statusCode)
         default:
             throw NetworkError.unexpectedStatusCode(response.statusCode)
         }
     }
+}
+
+private struct RateLimitBody: Codable {
+    let waitUntil: Date
+    enum CodingKeys: String, CodingKey { case waitUntil = "wait_until" }
 }
 
 private func mapNetworkError(_ error: NetworkError) -> CourtListenerError {

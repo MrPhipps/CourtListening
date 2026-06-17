@@ -10,6 +10,12 @@ public func update(
 
     switch message {
 
+    // MARK: - Infrastructure
+
+    case .usageRecorded(let at):
+        m.apiUsage = m.apiUsage.recording(at: at)
+        return (m, [])
+
     // MARK: - Court intents
 
     case .fetchCourt(let id):
@@ -82,23 +88,13 @@ public func update(
         return (m, [])
 
     case .courtsPageReceived(let page):
-        for court in page.results {
-            m.courts[court.id] = court
-        }
-        if case .total(let n) = page.count {
-            m.courtsPagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: n
-            )
-        } else {
-            m.courtsPagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: m.courtsPagination.totalCount
-            )
-        }
-        m.activeCommands.remove(.listCourts(cursor: nil))
+        for court in page.results { m.courts[court.id] = court }
+        m.courtsPagination = PaginationState(
+            nextCursor: page.nextCursor,
+            nextPage: page.nextPage,
+            totalCount: page.count.total ?? m.courtsPagination.totalCount
+        )
+        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listCourts = $0 { return true }; return false })
         return (m, [])
 
     case .docketReceived(let docket):
@@ -107,22 +103,13 @@ public func update(
         return (m, [])
 
     case .docketsPageReceived(let page):
-        for docket in page.results {
-            m.dockets[docket.id] = docket
-        }
-        if case .total(let n) = page.count {
-            m.docketsPagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: n
-            )
-        } else {
-            m.docketsPagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: m.docketsPagination.totalCount
-            )
-        }
+        for docket in page.results { m.dockets[docket.id] = docket }
+        m.docketsPagination = PaginationState(
+            nextCursor: page.nextCursor,
+            nextPage: page.nextPage,
+            totalCount: page.count.total ?? m.docketsPagination.totalCount
+        )
+        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .searchDockets = $0 { return true }; return false })
         return (m, [])
 
     case .clusterReceived(let cluster):
@@ -131,9 +118,13 @@ public func update(
         return (m, [])
 
     case .opinionsPageReceived(let page):
-        for opinion in page.results {
-            m.opinions[opinion.id] = opinion
-        }
+        for opinion in page.results { m.opinions[opinion.id] = opinion }
+        m.opinionsPagination = PaginationState(
+            nextCursor: page.nextCursor,
+            nextPage: page.nextPage,
+            totalCount: page.count.total ?? m.opinionsPagination.totalCount
+        )
+        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listOpinions = $0 { return true }; return false })
         return (m, [])
 
     case .personReceived(let person):
@@ -142,23 +133,13 @@ public func update(
         return (m, [])
 
     case .peoplePageReceived(let page):
-        for person in page.results {
-            m.people[person.id] = person
-        }
-        if case .total(let n) = page.count {
-            m.peoplePagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: n
-            )
-        } else {
-            m.peoplePagination = PaginationState(
-                nextCursor: page.nextCursor,
-                nextPage: page.nextPage,
-                totalCount: m.peoplePagination.totalCount
-            )
-        }
-        m.activeCommands.remove(.listPeople(cursor: nil))
+        for person in page.results { m.people[person.id] = person }
+        m.peoplePagination = PaginationState(
+            nextCursor: page.nextCursor,
+            nextPage: page.nextPage,
+            totalCount: page.count.total ?? m.peoplePagination.totalCount
+        )
+        m.activeCommands = m.activeCommands.removingAll(ofCase: { if case .listPeople = $0 { return true }; return false })
         return (m, [])
 
     case .partiesReceived(let docketID, let parties):
@@ -175,5 +156,20 @@ public func update(
         m.lastError = error
         m.activeCommands.removeAll()
         return (m, [])
+    }
+}
+
+// MARK: - Helpers
+
+private extension Set {
+    func removingAll(ofCase predicate: (Element) -> Bool) -> Set {
+        filter { !predicate($0) }
+    }
+}
+
+private extension ResponseCount {
+    var total: Int? {
+        if case .total(let n) = self { return n }
+        return nil
     }
 }

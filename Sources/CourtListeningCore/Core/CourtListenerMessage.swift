@@ -1,4 +1,10 @@
 public enum CourtListenerMessage: Sendable {
+    // MARK: - Infrastructure messages (emitted by the shell, not by callers)
+
+    /// Records that one HTTP request completed at the given time.
+    /// Emitted by the shell after every request that reached the server (including 4xx/5xx).
+    case usageRecorded(at: Date)
+
     // MARK: - Intent messages (sent by callers)
     case fetchCourt(CourtID)
     case listCourts(cursor: String?)

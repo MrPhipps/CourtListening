@@ -6,7 +6,7 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
     case unauthorized
     case forbidden
     case notFound(String)
-    case rateLimited(retryAfter: TimeInterval?)
+    case rateLimited(until: Date?)
     case serverError(statusCode: Int)
     case decodingFailed(String)
     case networkUnavailable
@@ -24,8 +24,13 @@ public enum CourtListenerError: Error, Sendable, LocalizedError, Equatable {
             return "Access denied for this resource"
         case .notFound(let resource):
             return "Resource not found: \(resource)"
-        case .rateLimited(let retry):
-            if let retry { return "Rate limited — retry after \(Int(retry)) seconds" }
+        case .rateLimited(let until):
+            if let until {
+                let formatter = DateFormatter()
+                formatter.timeStyle = .medium
+                formatter.dateStyle = .none
+                return "Rate limited — retry after \(formatter.string(from: until))"
+            }
             return "Rate limited — please retry later"
         case .serverError(let code):
             return "Server error \(code)"
