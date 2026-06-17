@@ -38,6 +38,29 @@ public struct Court: Sendable, Codable, Hashable {
         case fjcCourtID = "fjc_court_id"
         case dateModified = "date_modified"
     }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        resourceURI = try c.decode(URL.self, forKey: .resourceURI)
+        id = try c.decode(CourtID.self, forKey: .id)
+        shortName = try c.decode(String.self, forKey: .shortName)
+        fullName = try c.decode(String.self, forKey: .fullName)
+        citationString = try c.decode(String.self, forKey: .citationString)
+        jurisdiction = try c.decode(Jurisdiction.self, forKey: .jurisdiction)
+        inUse = try c.decode(Bool.self, forKey: .inUse)
+        hasOpinionScraper = try c.decode(Bool.self, forKey: .hasOpinionScraper)
+        hasOralArgumentScraper = try c.decode(Bool.self, forKey: .hasOralArgumentScraper)
+        position = try c.decode(Double.self, forKey: .position)
+        // The API returns "" for courts with no website — treat blank/invalid as nil
+        let urlString = try c.decodeIfPresent(String.self, forKey: .websiteURL)
+        websiteURL = urlString.flatMap { $0.isEmpty ? nil : URL(string: $0) }
+        startDate = try c.decodeIfPresent(String.self, forKey: .startDate)
+        endDate = try c.decodeIfPresent(String.self, forKey: .endDate)
+        parentCourt = try c.decodeIfPresent(URL.self, forKey: .parentCourt)
+        appealsTo = try c.decode([URL].self, forKey: .appealsTo)
+        fjcCourtID = try c.decode(String.self, forKey: .fjcCourtID)
+        dateModified = try c.decode(Date.self, forKey: .dateModified)
+    }
 }
 
 #if DEBUG
