@@ -31,9 +31,9 @@ public struct Attorney: Sendable, Codable, Hashable {
         contactRaw = try c.decode(String.self, forKey: .contactRaw)
         dateCreated = try c.decode(Date.self, forKey: .dateCreated)
         dateModified = try c.decode(Date.self, forKey: .dateModified)
-        phone = try Self.optionalContact(PhoneNumber.self, from: c, key: .phone)
-        fax = try Self.optionalContact(PhoneNumber.self, from: c, key: .fax)
-        email = try Self.optionalContact(EmailAddress.self, from: c, key: .email)
+        phone = try Self.optionalContact(from: c, key: .phone) { try PhoneNumber($0) }
+        fax  = try Self.optionalContact(from: c, key: .fax)   { try PhoneNumber($0) }
+        email = try Self.optionalContact(from: c, key: .email) { try EmailAddress($0) }
     }
 
     public init(
@@ -58,16 +58,17 @@ public struct Attorney: Sendable, Codable, Hashable {
         self.dateModified = dateModified
     }
 
-    // Decodes a string field: absent/blank → nil, invalid format → throws.
-    private static func optionalContact<T: RawRepresentable>(
-        _ type: T.Type,
+    // Decodes a string field: absent/blank → nil, non-blank → constructed via closure.
+    // Using a closure avoids decoding the JSON value twice while staying generic.
+    private static func optionalContact<T>(
         from container: KeyedDecodingContainer<CodingKeys>,
-        key: CodingKeys
-    ) throws -> T? where T.RawValue == String, T: Codable {
+        key: CodingKeys,
+        construct: (String) throws -> T
+    ) throws -> T? {
         guard let raw = try container.decodeIfPresent(String.self, forKey: key),
               !raw.trimmingCharacters(in: .whitespaces).isEmpty
         else { return nil }
-        return try container.decode(T.self, forKey: key)
+        return try construct(raw)
     }
 }
 

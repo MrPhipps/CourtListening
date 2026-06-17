@@ -6,11 +6,11 @@ public struct PhoneNumber: RawRepresentable, Sendable, Codable, Hashable {
     public let rawValue: String
 
     public init(_ rawValue: String) throws {
-        let normalised = rawValue.filter { $0.isNumber || ($0 == "+" && rawValue.firstIndex(of: "+") == rawValue.startIndex) }
-        let digitCount = normalised.filter(\.isNumber).count
-        guard digitCount >= 7
+        let hasLeadingPlus = rawValue.first == "+"
+        let digits = rawValue.filter(\.isNumber)
+        guard digits.count >= 7
         else { throw CourtListenerError.invalidIdentifier("PhoneNumber must contain at least 7 digits") }
-        self.rawValue = normalised
+        self.rawValue = (hasLeadingPlus ? "+" : "") + digits
     }
 
     public init(rawValue: String) throws {

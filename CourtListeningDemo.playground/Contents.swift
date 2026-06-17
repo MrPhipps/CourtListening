@@ -94,8 +94,14 @@ print("Has more pages: \(pagedModel.courtsPagination.hasMore)")
 
 // MARK: - Section 3: Live API — List Courts
 //
-// Replace "REPLACE_ME" with your CourtListener API token.
+// Replace the placeholder below with your CourtListener API token.
 // Get one at: https://www.courtlistener.com/profile/api/
+//
+// Note: the placeholder is long enough to pass APIToken validation (≥10 chars),
+// so it won't throw here. If you run Sections 3–5 without replacing it, the
+// runner will receive a 401 and model.lastError will be set to
+// .commandFailed(.unauthorized, ...) — which actually demonstrates the
+// error-handling path. Replace it to see live data.
 
 let apiToken = try APIToken("REPLACE_ME_WITH_YOUR_TOKEN_AT_LEAST_TEN_CHARS")
 

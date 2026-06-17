@@ -210,14 +210,25 @@ final class DomainValidationTests: XCTestCase {
         }
     }
 
-    func testPhoneNumberAcceptsFormattedNumber() throws {
+    func testPhoneNumberNormalisesLeadingPlus() throws {
         let number = try PhoneNumber("+1-800-555-0199")
-        XCTAssertTrue(number.rawValue.filter(\.isNumber).count >= 7)
+        XCTAssertEqual(number.rawValue, "+18005550199")
+    }
+
+    func testPhoneNumberStripsNonDigitsWithoutLeadingPlus() throws {
+        let number = try PhoneNumber("(202) 555-0100")
+        XCTAssertEqual(number.rawValue, "2025550100")
+    }
+
+    func testPhoneNumberDoesNotKeepEmbeddedPlus() throws {
+        // A '+' not at the very start must be stripped, not kept
+        let number = try PhoneNumber("1-800+555-0199")
+        XCTAssertFalse(number.rawValue.contains("+"), "Embedded '+' should be stripped")
     }
 
     func testPhoneNumberAcceptsSevenDigitMinimum() throws {
         let number = try PhoneNumber("555-0100")
-        XCTAssertNotNil(number)
+        XCTAssertEqual(number.rawValue, "5550100")
     }
 
     // MARK: - NonEmptyString
