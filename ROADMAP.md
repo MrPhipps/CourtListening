@@ -1,5 +1,11 @@
 # Roadmap
 
+## Vision
+
+A Swift wrapper for the CourtListener and federal court APIs that makes it easy to research cases and collect and display legal documents. The long-term goal is light ML-driven information mining and analysis on top of that document corpus. Personal use and beta testing — not a commercial product.
+
+---
+
 Items are listed in rough priority order within each tier. Nothing here is committed — it reflects intent, not a schedule.
 
 ---
@@ -48,6 +54,14 @@ The CourtListener `/api/rest/v4/search/` endpoint supports cross-resource querie
 ---
 
 ## Long-term / Exploratory
+
+### Document Collection & Local Storage
+
+Persist fetched opinions, clusters, and dockets to a local store (SQLite or Core Data) so the app can browse and search the collected corpus offline. The `CourtListenerModel` stays an in-memory cache; the store is a separate shell-layer actor that mirrors documents from the model to disk after each successful fetch.
+
+### ML-Driven Information Mining & Analysis
+
+Light on-device NLP over the collected document corpus: entity extraction (judges, parties, statutes cited), similarity search across opinions, and trend detection across dockets over time. Likely built on the Create ML or Natural Language frameworks. Architecture: analysis runs as a `Command` that reads from the local store and emits structured `analysisCompleted` messages back into the model — core stays pure, ML lives in the shell.
 
 ### Webhook / Alert Integration
 
