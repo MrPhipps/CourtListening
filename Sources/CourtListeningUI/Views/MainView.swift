@@ -11,7 +11,9 @@ struct MainView: View {
             CourtsView(store: store, onSignOut: onSignOut)
                 .tabItem { Label("Courts", systemImage: "building.columns") }
         }
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            // Bottom edge (above the tab bar) so the HUD never floats over a screen's
+            // navigation title. Subject to a visual pass in the app host.
             UsageHUD(usage: store.model.apiUsage)
         }
     }
