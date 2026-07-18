@@ -6,6 +6,7 @@ public struct CourtListenerModel: Sendable {
     public var people: [PersonID: Person]
     public var parties: [DocketID: [Party]]
     public var attorneys: [DocketID: [Attorney]]
+    public var oralArguments: [DocketID: [Audio]]
     public var courtsPagination: PaginationState
     public var docketsPagination: PaginationState
     public var opinionsPagination: PaginationState
@@ -22,6 +23,7 @@ public struct CourtListenerModel: Sendable {
         people: [:],
         parties: [:],
         attorneys: [:],
+        oralArguments: [:],
         courtsPagination: .initial,
         docketsPagination: .initial,
         opinionsPagination: .initial,

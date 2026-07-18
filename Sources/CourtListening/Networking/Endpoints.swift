@@ -70,4 +70,10 @@ enum Endpoints {
         components.queryItems = [URLQueryItem(name: "docket", value: "\(docketID.rawValue)")]
         return components.url!
     }
+
+    static func oralArguments(docketID: DocketID) -> URL {
+        var components = URLComponents(url: base.appending(path: "audio/"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "docket", value: "\(docketID.rawValue)")]
+        return components.url!
+    }
 }

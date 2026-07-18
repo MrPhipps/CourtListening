@@ -174,6 +174,32 @@ final class DecodingTests: XCTestCase {
         let types = try decoder.decode([OpinionType].self, from: data)
         XCTAssertEqual(types, [.trialCourtDocument, .unanimous, .combined])
     }
+
+    // MARK: - audio-list.json (oral arguments, real shape)
+
+    func testAudioListDecodesWithTopLevelDocket() throws {
+        let data = try fixture("audio-list")
+        let response = try decoder.decode(PaginatedResponse<Audio>.self, from: data)
+        XCTAssertEqual(response.results.count, 2)
+        let first = try XCTUnwrap(response.results.first)
+        XCTAssertEqual(first.id, try AudioID(105800))
+        XCTAssertEqual(first.caseName, "In re Catron")
+        XCTAssertEqual(first.duration, 569)
+        XCTAssertEqual(first.docket.absoluteString, "https://www.courtlistener.com/api/rest/v4/dockets/73632039/")
+        XCTAssertNotNil(first.downloadURL)
+    }
+
+    func testAudioListCountIsDeferredAndBlankDownloadIsNil() throws {
+        let data = try fixture("audio-list")
+        let response = try decoder.decode(PaginatedResponse<Audio>.self, from: data)
+        guard case .deferred = response.count else {
+            return XCTFail("audio is a cursor endpoint; count should be .deferred, got \(response.count)")
+        }
+        // Second record has download_url "" — must degrade to nil, not throw.
+        let second = response.results[1]
+        XCTAssertNil(second.downloadURL)
+        XCTAssertEqual(second.caseNameShort, "")
+    }
 }
 
 // MARK: - Helpers

@@ -1,0 +1,39 @@
+{
+  "count": "https://www.courtlistener.com/api/rest/v4/audio/?count=on&docket=73632039",
+  "next": "https://www.courtlistener.com/api/rest/v4/audio/?cursor=cD0xMDU4MDA%3D&docket=73632039",
+  "previous": null,
+  "results": [
+    {
+      "resource_uri": "https://www.courtlistener.com/api/rest/v4/audio/105800/",
+      "id": 105800,
+      "docket": "https://www.courtlistener.com/api/rest/v4/dockets/73632039/",
+      "case_name": "In re Catron",
+      "case_name_short": "Catron",
+      "case_name_full": "In re Catron",
+      "judges": "",
+      "duration": 569,
+      "download_url": "https://cdn.ca9.uscourts.gov/datastore/media/2026/07/16/25-1137.mp3",
+      "local_path_mp3": "mp3/2026/07/16/in_re_catron_cl.mp3",
+      "sha1": "9e666202142717d5a4f6ed06739f0e701d66edae",
+      "source": "C",
+      "date_created": "2026-07-16T17:30:39.870158-07:00",
+      "date_modified": "2026-07-16T17:32:56.789205-07:00"
+    },
+    {
+      "resource_uri": "https://www.courtlistener.com/api/rest/v4/audio/105801/",
+      "id": 105801,
+      "docket": "https://www.courtlistener.com/api/rest/v4/dockets/73632039/",
+      "case_name": "In re Catron (rebuttal)",
+      "case_name_short": "",
+      "case_name_full": "",
+      "judges": "",
+      "duration": 122,
+      "download_url": "",
+      "local_path_mp3": "mp3/2026/07/16/in_re_catron_rebuttal_cl.mp3",
+      "sha1": "",
+      "source": "C",
+      "date_created": "2026-07-16T17:35:00.000000-07:00",
+      "date_modified": "2026-07-16T17:35:00.000000-07:00"
+    }
+  ]
+}

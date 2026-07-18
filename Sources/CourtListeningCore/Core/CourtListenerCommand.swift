@@ -9,4 +9,5 @@ public enum CourtListenerCommand: Sendable, Hashable, Codable {
     case listPeople(cursor: Cursor?)
     case fetchParties(docketID: DocketID)
     case fetchAttorneys(docketID: DocketID)
+    case fetchOralArguments(docketID: DocketID)
 }

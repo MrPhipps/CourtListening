@@ -20,6 +20,7 @@ public enum CourtListenerMessage: Sendable {
     case listPeople(cursor: Cursor?)
     case fetchParties(docketID: DocketID)
     case fetchAttorneys(docketID: DocketID)
+    case fetchOralArguments(docketID: DocketID)
 
     // MARK: - Response messages (fed back from the shell after executing commands)
 
@@ -33,6 +34,7 @@ public enum CourtListenerMessage: Sendable {
     case peoplePageReceived(PaginatedResponse<Person>)
     case partiesReceived(docketID: DocketID, [Party])
     case attorneysReceived(docketID: DocketID, [Attorney])
+    case oralArgumentsReceived(docketID: DocketID, [Audio])
 
     // MARK: - Failure messages
 

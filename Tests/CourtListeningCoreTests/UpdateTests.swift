@@ -142,6 +142,29 @@ final class UpdateTests: XCTestCase {
         XCTAssertTrue(commands.isEmpty)
     }
 
+    // MARK: - oralArguments
+
+    func testFetchOralArgumentsAddsCommandToActive() throws {
+        let docketID = try DocketID(73632039)
+        let (newModel, commands) = update(message: .fetchOralArguments(docketID: docketID), model: .initial)
+        XCTAssertTrue(newModel.activeCommands.contains(.fetchOralArguments(docketID: docketID)))
+        XCTAssertEqual(commands, [.fetchOralArguments(docketID: docketID)])
+    }
+
+    func testOralArgumentsReceivedStoresUnderDocketIDAndClearsCommand() throws {
+        let docketID = try DocketID(73632039)
+        let audio = Audio.TestData.inReCatron
+        var model = CourtListenerModel.initial
+        (model, _) = update(message: .fetchOralArguments(docketID: docketID), model: model)
+        let (finalModel, commands) = update(
+            message: .oralArgumentsReceived(docketID: docketID, [audio]),
+            model: model
+        )
+        XCTAssertEqual(finalModel.oralArguments[docketID], [audio])
+        XCTAssertFalse(finalModel.activeCommands.contains(.fetchOralArguments(docketID: docketID)))
+        XCTAssertTrue(commands.isEmpty)
+    }
+
     // MARK: - API Usage tracking
 
     func testUsageRecordedIncrementsAllCounters() {

@@ -80,6 +80,11 @@ public func update(
         m.lastError = nil
         return (m, [.fetchAttorneys(docketID: docketID)])
 
+    case .fetchOralArguments(let docketID):
+        m.activeCommands.insert(.fetchOralArguments(docketID: docketID))
+        m.lastError = nil
+        return (m, [.fetchOralArguments(docketID: docketID)])
+
     // MARK: - Response messages
 
     case .courtReceived(let court):
@@ -150,6 +155,11 @@ public func update(
     case .attorneysReceived(let docketID, let attorneys):
         m.attorneys[docketID] = attorneys
         m.activeCommands.remove(.fetchAttorneys(docketID: docketID))
+        return (m, [])
+
+    case .oralArgumentsReceived(let docketID, let recordings):
+        m.oralArguments[docketID] = recordings
+        m.activeCommands.remove(.fetchOralArguments(docketID: docketID))
         return (m, [])
 
     // MARK: - Failure

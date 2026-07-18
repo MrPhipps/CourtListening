@@ -69,6 +69,11 @@ extension CourtListenerRunner {
             let data = try await fetch(Endpoints.attorneys(docketID: docketID))
             let page = try ResponseDecoder.shared.decode(PaginatedResponse<Attorney>.self, from: data)
             return .attorneysReceived(docketID: docketID, page.results)
+
+        case .fetchOralArguments(let docketID):
+            let data = try await fetch(Endpoints.oralArguments(docketID: docketID))
+            let page = try ResponseDecoder.shared.decode(PaginatedResponse<Audio>.self, from: data)
+            return .oralArgumentsReceived(docketID: docketID, page.results)
         }
     }
 
