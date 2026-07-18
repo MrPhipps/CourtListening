@@ -10,6 +10,8 @@ struct MainView: View {
         TabView {
             CourtsView(store: store, onSignOut: onSignOut)
                 .tabItem { Label("Courts", systemImage: "building.columns") }
+            DocketSearchView(store: store)
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             // Bottom edge (above the tab bar) so the HUD never floats over a screen's
