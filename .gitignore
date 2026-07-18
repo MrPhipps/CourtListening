@@ -5,6 +5,13 @@
 ## User settings
 xcuserdata/
 DerivedData/
+App/build/
+HANDOFF.md
+AGENTS.md
+.logs/
+build/
+.swiftpm/xcode/xcuserdata/
+
 
 ## Obj-C/Swift specific
 *.hmap
