@@ -64,7 +64,7 @@ struct CourtRow: View {
             Text(court.shortName).font(Design.Font.heading)
             HStack(spacing: Design.Spacing.sm) {
                 Text(court.citationString).font(Design.Font.caption).foregroundStyle(Design.Color.secondaryText)
-                Text(court.jurisdiction.rawValue).font(Design.Font.caption).foregroundStyle(Design.Color.accent)
+                Text(court.jurisdiction.displayName).font(Design.Font.caption).foregroundStyle(Design.Color.accent)
             }
         }
         .padding(.vertical, Design.Spacing.xs)
@@ -81,7 +81,7 @@ struct CourtDetailView: View {
                 labeled("Full name", court.fullName)
                 labeled("Short name", court.shortName)
                 labeled("Citation", court.citationString)
-                labeled("Jurisdiction", court.jurisdiction.rawValue)
+                labeled("Jurisdiction", court.jurisdiction.displayName)
             }
             Section("Status") {
                 labeled("In use", court.inUse ? "Yes" : "No")
