@@ -108,7 +108,7 @@ let apiToken = try APIToken("REPLACE_ME_WITH_YOUR_TOKEN_AT_LEAST_TEN_CHARS")
 let runner = CourtListenerRunner(token: apiToken)
 
 print("\n— Fetching first page of courts from live API —")
-await runner.handle(message: .listCourts(cursor: nil))
+await runner.handle(message: .listCourts(page: nil))
 
 let liveModel = await runner.model
 print("Courts fetched: \(liveModel.courts.count)")
@@ -124,10 +124,10 @@ if let scotusLive = liveModel.courts[scotusID] {
 
 // MARK: - Section 4: Pagination
 
-// Use the next cursor from the previous fetch to load page 2.
-if let cursor = (await runner.model).courtsPagination.nextCursor {
-    print("\n— Fetching page 2 (cursor: \(cursor.rawValue)) —")
-    await runner.handle(message: .listCourts(cursor: cursor))
+// /courts/ is page-based: use the next page number from the previous fetch to load page 2.
+if let nextPage = (await runner.model).courtsPagination.nextPage {
+    print("\n— Fetching page \(nextPage) —")
+    await runner.handle(message: .listCourts(page: nextPage))
     let afterPage2 = await runner.model
     print("Courts accumulated: \(afterPage2.courts.count)")
 }

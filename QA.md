@@ -124,7 +124,8 @@ let _ : CourtID = "scotus"
 ```swift
 import CourtListeningCore
 import CourtListening
-let msg = CourtListenerMessage.listCourts(cursor: "cD0xNjIyMw==")
+// People/dockets/opinions are cursor-based; courts is page-based (Int).
+let msg = CourtListenerMessage.listPeople(cursor: "cD0xNjIyMw==")
 ```
 
 **Expected:** `cannot convert value of type 'String' to expected argument type 'Cursor?'`
@@ -197,12 +198,15 @@ Validation checklist:
 **Expected:**
 
 ```
-— Fetching page 2 (cursor: <base64-encoded-cursor>) —
+— Fetching page 2 —
 Courts accumulated: <M>    ← should be greater than Section 3's court count
 ```
 
+`/courts/` uses page-number pagination (`?page=N`), not cursors — the request must send
+`?page=2`. (Cursor pagination applies to people/dockets/opinions/parties/attorneys.)
+
 Validation checklist:
-- [ ] The cursor is a non-empty string
+- [ ] `courtsPagination.nextPage` is a positive integer after page 1
 - [ ] `Courts accumulated` is strictly greater than the count after page 1
 
 ### Section 5 — Fetch a Judge
@@ -251,7 +255,7 @@ print("\n— API Usage —")
 print("Requests this minute: \(judgeModel.apiUsage.requestsThisMinute)")
 print("Requests this hour:   \(judgeModel.apiUsage.requestsThisHour)")
 print("Requests this day:    \(judgeModel.apiUsage.requestsThisDay)")
-print("Minute remaining:     \(judgeModel.apiUsage.minuteRemaining) / \(APIUsage.minuteLimit)")
+print("Minute remaining:     \(judgeModel.apiUsage.minuteRemaining) / \(judgeModel.apiUsage.minuteLimit)")
 print("At minute limit:      \(judgeModel.apiUsage.isAtMinuteLimit)")
 ```
 
@@ -267,7 +271,9 @@ At minute limit:      false
 ```
 
 Exact counts depend on how quickly you ran the playground relative to the rolling window;
-the key invariant is `requestsThisMinute + minuteRemaining == APIUsage.minuteLimit`.
+the key invariant is `requestsThisMinute + minuteRemaining == apiUsage.minuteLimit`.
+(Limits are per-session config now, defaulting to the documented base tier; your account's
+actual tier — possibly higher during a promo — is enforced server-side via HTTP 429.)
 
 ---
 
@@ -283,3 +289,29 @@ the key invariant is `requestsThisMinute + minuteRemaining == APIUsage.minuteLim
 | Live API — judge 1781 name non-empty and positions > 0 | |
 | Error path — invalid token produces `.unauthorized`, no crash | |
 | Usage tracking — `requests + remaining == minuteLimit` | |
+
+---
+
+## Appendix: Live API validation findings (2026-07)
+
+The domain models were validated against the live CourtListener v4 API (authenticated,
+including OPTIONS requests for enum `choices`). Findings below were **fixed** on branch
+`claude/courtlistening-swiftui-auth`; each is covered by a regression test built from
+real API JSON so it cannot silently recur.
+
+| # | Severity | Finding | Fix |
+|---|---|---|---|
+| 1 | 🔴 High | `Party.docket` was a required top-level `URL`, but the live `/parties/` response has **no top-level `docket`** (it lives under `party_types[]`). Every party decode threw `keyNotFound` → `fetchParties` always failed. | Removed the absent top-level `docket`/`date_terminated`. Added `parties-list.json` real-shape fixture + `testPartiesListDecodesWithoutTopLevelDocket`. `party_types` to be modeled when docket-detail surfaces party roles. |
+| 2 | 🔴 High | `/courts/` is **page-based** (`?page=N`, integer `count`) but the courts request sent `?cursor=`, which CL ignores → pagination never advanced past page 1. | Flipped the courts path from `Cursor?` to `page: Int?`. `testCourtsPaginationAppendsPageParameter` asserts `?page=` and rejects any cursor param. |
+| 3 | 🟠 Med | `PrecedentialStatus` raw values used the API `display_name`, not the `value` field: `"Separate Opinion"`/`"Relating-to orders"` decoded as `.unknown`; `precedential`/`nonPrecedential` were dead cases. | Values corrected to `"Separate"`/`"Relating-to"`; dead cases removed. `testPrecedentialStatusDecodesAPIValues`. |
+| 4 | 🟡 Low | `OpinionType` was missing the API value `"100trialcourt"` (Trial Court Document). | Added `trialCourtDocument`. `testOpinionTypeDecodesTrialCourtAndRealMisspelling`. |
+| 5 | 🟡 Low | `APIUsage` hardcoded 5/50/125, but limits vary by tier/promotion and are enforced server-side (429 + `wait_until`). | Made limits injectable per-session config with base-tier defaults; preserved across `recording()`. |
+
+**Validated correct (no change):** `ResponseCount` polymorphism (`.total` for courts vs
+`.deferred` for cursor endpoints), cursor pagination on dockets/parties/attorneys/people/
+opinions, the `Attorney` model, snake_case field mappings, `OpinionType`'s 12 other values
+(including the API's real misspelling `015unamimous`), and `.unknown` enum fallbacks.
+
+**Security note:** an API token was exposed in a working session while validating live
+endpoints — reset it at `/profile/api-token/reset/`. Ensure any local `env.md` holding
+tokens/cookies is git-ignored and never committed.
