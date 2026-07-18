@@ -1,12 +1,12 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
     name: "CourtListening",
     platforms: [
-        // iOS 17 / macOS 14 baseline: required by the SwiftUI @Observable presentation layer.
-        .macOS(.v14),
-        .iOS(.v17),
+        // OS 26 baseline (Xcode 27 / Swift 6 toolchain).
+        .macOS("26.0"),
+        .iOS("26.0"),
     ],
     products: [
         .library(name: "CourtListeningCore", targets: ["CourtListeningCore"]),
