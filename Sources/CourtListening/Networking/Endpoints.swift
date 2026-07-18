@@ -8,10 +8,12 @@ enum Endpoints {
         base.appending(path: "courts/\(id.rawValue)/")
     }
 
-    static func courts(cursor: Cursor? = nil) -> URL {
+    // /courts/ uses page-number pagination (?page=N) with an integer `count`,
+    // unlike the cursor-based list endpoints. Verified live against the v4 API.
+    static func courts(page: Int? = nil) -> URL {
         var components = URLComponents(url: base.appending(path: "courts/"), resolvingAgainstBaseURL: false)!
-        if let cursor {
-            components.queryItems = [URLQueryItem(name: "cursor", value: cursor.rawValue)]
+        if let page {
+            components.queryItems = [URLQueryItem(name: "page", value: "\(page)")]
         }
         return components.url!
     }

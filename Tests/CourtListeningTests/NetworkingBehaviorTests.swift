@@ -14,7 +14,7 @@ final class NetworkingBehaviorTests: XCTestCase {
         let transport = CourtListenerTransport.spy(capture: capture, responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: token, transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let requests = await capture.capturedRequests
         XCTAssertFalse(requests.isEmpty)
@@ -33,27 +33,28 @@ final class NetworkingBehaviorTests: XCTestCase {
         let transport = CourtListenerTransport.spy(capture: capture, responses: [expectedURL: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let requests = await capture.capturedRequests
         XCTAssertEqual(requests.first?.url, expectedURL)
     }
 
-    func testCursorPaginationAppendsQueryParameter() async throws {
-        let cursor = try Cursor("cD0xNjIyMw==")
-        let expectedURL = URL(string: "https://www.courtlistener.com/api/rest/v4/courts/?cursor=\(cursor.rawValue)")!
+    func testCourtsPaginationAppendsPageParameter() async throws {
+        // /courts/ is page-based: the request must carry ?page=N, never ?cursor=.
+        let expectedURL = URL(string: "https://www.courtlistener.com/api/rest/v4/courts/?page=2")!
         let fixtureData = try loadFixture("courts-list")
         let capture = RequestCapture()
         let transport = CourtListenerTransport.spy(capture: capture, responses: [expectedURL: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: cursor))
+        await runner.handle(message: .listCourts(page: 2))
 
         let requests = await capture.capturedRequests
         let requestURL = try XCTUnwrap(requests.first?.url)
         let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false)
-        let cursorItem = components?.queryItems?.first(where: { $0.name == "cursor" })
-        XCTAssertEqual(cursorItem?.value, cursor.rawValue)
+        let pageItem = components?.queryItems?.first(where: { $0.name == "page" })
+        XCTAssertEqual(pageItem?.value, "2")
+        XCTAssertNil(components?.queryItems?.first(where: { $0.name == "cursor" }), "courts must not send a cursor param")
     }
 
     // MARK: - HTTP method
@@ -65,7 +66,7 @@ final class NetworkingBehaviorTests: XCTestCase {
         let transport = CourtListenerTransport.spy(capture: capture, responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let requests = await capture.capturedRequests
         for request in requests {
@@ -79,7 +80,7 @@ final class NetworkingBehaviorTests: XCTestCase {
         let transport = CourtListenerTransport.failing(.unexpectedStatusCode(401))
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertNotNil(model.lastError)

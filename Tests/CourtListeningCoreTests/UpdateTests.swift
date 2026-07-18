@@ -63,16 +63,15 @@ final class UpdateTests: XCTestCase {
     // MARK: - listCourts
 
     func testListCourtsAddsCommandToActive() {
-        let (newModel, commands) = update(message: .listCourts(cursor: nil), model: .initial)
-        XCTAssertTrue(newModel.activeCommands.contains(.listCourts(cursor: nil)))
-        XCTAssertEqual(commands, [.listCourts(cursor: nil)])
+        let (newModel, commands) = update(message: .listCourts(page: nil), model: .initial)
+        XCTAssertTrue(newModel.activeCommands.contains(.listCourts(page: nil)))
+        XCTAssertEqual(commands, [.listCourts(page: nil)])
     }
 
-    func testListCourtsWithCursorPassesCursor() throws {
-        let cursor = try Cursor("cD0xNjIyMw==")
-        let (newModel, commands) = update(message: .listCourts(cursor: cursor), model: .initial)
-        XCTAssertTrue(newModel.activeCommands.contains(.listCourts(cursor: cursor)))
-        XCTAssertEqual(commands, [.listCourts(cursor: cursor)])
+    func testListCourtsWithPagePassesPage() throws {
+        let (newModel, commands) = update(message: .listCourts(page: 2), model: .initial)
+        XCTAssertTrue(newModel.activeCommands.contains(.listCourts(page: 2)))
+        XCTAssertEqual(commands, [.listCourts(page: 2)])
     }
 
     // MARK: - fetchPerson
@@ -96,7 +95,7 @@ final class UpdateTests: XCTestCase {
     // MARK: - commandFailed
 
     func testCommandFailedSetsLastError() throws {
-        let command = CourtListenerCommand.listCourts(cursor: nil)
+        let command = CourtListenerCommand.listCourts(page: nil)
         let (newModel, commands) = update(message: .commandFailed(.unauthorized, command), model: .initial)
         XCTAssertEqual(newModel.lastError, .unauthorized)
         XCTAssertTrue(commands.isEmpty)
@@ -184,17 +183,18 @@ final class UpdateTests: XCTestCase {
     func testUsageRemainingDecrements() {
         let now = Date()
         var model = CourtListenerModel.initial
-        XCTAssertEqual(model.apiUsage.minuteRemaining, APIUsage.minuteLimit)
+        XCTAssertEqual(model.apiUsage.minuteRemaining, model.apiUsage.minuteLimit)
+        let limit = model.apiUsage.minuteLimit
         for _ in 0..<3 {
             (model, _) = update(message: .usageRecorded(at: now), model: model)
         }
-        XCTAssertEqual(model.apiUsage.minuteRemaining, APIUsage.minuteLimit - 3)
+        XCTAssertEqual(model.apiUsage.minuteRemaining, limit - 3)
     }
 
     func testUsageAtLimitFlagsCorrectly() {
         let now = Date()
         var model = CourtListenerModel.initial
-        for _ in 0..<APIUsage.minuteLimit {
+        for _ in 0..<model.apiUsage.minuteLimit {
             (model, _) = update(message: .usageRecorded(at: now), model: model)
         }
         XCTAssertTrue(model.apiUsage.isAtMinuteLimit)
@@ -204,10 +204,9 @@ final class UpdateTests: XCTestCase {
     // MARK: - Pagination cursor removal
 
     func testListCourtsCommandClearedAfterPageReceived() throws {
-        let cursor = try Cursor("cD0yMDA=")
         var model = CourtListenerModel.initial
-        (model, _) = update(message: .listCourts(cursor: cursor), model: model)
-        XCTAssertTrue(model.activeCommands.contains(.listCourts(cursor: cursor)))
+        (model, _) = update(message: .listCourts(page: 2), model: model)
+        XCTAssertTrue(model.activeCommands.contains(.listCourts(page: 2)))
 
         let page = PaginatedResponse<Court>(
             count: .total(3359),

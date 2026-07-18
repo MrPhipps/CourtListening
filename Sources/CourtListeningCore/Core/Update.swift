@@ -23,8 +23,8 @@ public func update(
         m.lastError = nil
         return (m, [.fetchCourt(id: id)])
 
-    case .listCourts(let cursor):
-        let command = CourtListenerCommand.listCourts(cursor: cursor)
+    case .listCourts(let page):
+        let command = CourtListenerCommand.listCourts(page: page)
         m.activeCommands.insert(command)
         m.lastError = nil
         return (m, [command])

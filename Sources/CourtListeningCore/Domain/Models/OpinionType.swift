@@ -11,6 +11,7 @@ public enum OpinionType: String, Codable, Sendable, Hashable, CaseIterable {
     case rehearing = "070rehearing"
     case onMerits = "080onthemerits"
     case onMotionToStrike = "090onmotiontostrike"
+    case trialCourtDocument = "100trialcourt"
     case unknown
 
     public init(from decoder: any Decoder) throws {

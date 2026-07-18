@@ -32,8 +32,8 @@ extension CourtListenerRunner {
             let data = try await fetch(Endpoints.court(id))
             return .courtReceived(try ResponseDecoder.shared.decode(Court.self, from: data))
 
-        case .listCourts(let cursor):
-            let data = try await fetch(Endpoints.courts(cursor: cursor))
+        case .listCourts(let page):
+            let data = try await fetch(Endpoints.courts(page: page))
             return .courtsPageReceived(try ResponseDecoder.shared.decode(PaginatedResponse<Court>.self, from: data))
 
         case .fetchDocket(let id):

@@ -12,7 +12,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.stubbed(responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertFalse(model.courts.isEmpty)
@@ -25,7 +25,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.stubbed(responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         let scotus = model.courts[try CourtID("scotus")]
@@ -38,7 +38,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.stubbed(responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertEqual(model.courtsPagination.totalCount, 3359)
@@ -50,7 +50,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.stubbed(responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertTrue(model.activeCommands.isEmpty)
@@ -64,13 +64,13 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.stubbed(responses: [url: fixtureData])
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertEqual(model.apiUsage.requestsThisMinute, 1)
         XCTAssertEqual(model.apiUsage.requestsThisHour, 1)
         XCTAssertEqual(model.apiUsage.requestsThisDay, 1)
-        XCTAssertEqual(model.apiUsage.minuteRemaining, APIUsage.minuteLimit - 1)
+        XCTAssertEqual(model.apiUsage.minuteRemaining, model.apiUsage.minuteLimit - 1)
     }
 
     func testHttpErrorStillIncrementsUsage() async throws {
@@ -78,7 +78,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.failing(.unexpectedStatusCode(403))
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertNotNil(model.lastError)
@@ -91,7 +91,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.failing(.requestFailed(URLError(.notConnectedToInternet)))
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertEqual(model.apiUsage.requestsThisMinute, 0, "Network failures should not consume quota")
@@ -103,7 +103,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.failing(.unexpectedStatusCode(401))
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertNotNil(model.lastError)
@@ -113,7 +113,7 @@ final class RunnerIntegrationTests: XCTestCase {
         let transport = CourtListenerTransport.failing(.requestFailed(URLError(.notConnectedToInternet)))
         let runner = CourtListenerRunner(token: try APIToken("testtoken123"), transport: transport)
 
-        await runner.handle(message: .listCourts(cursor: nil))
+        await runner.handle(message: .listCourts(page: nil))
 
         let model = await runner.model
         XCTAssertTrue(model.activeCommands.isEmpty)

@@ -39,7 +39,7 @@ extension CourtListenerModel {
 
         public static let loadingCourts: CourtListenerModel = {
             var m = CourtListenerModel.initial
-            m.activeCommands = [.listCourts(cursor: nil)]
+            m.activeCommands = [.listCourts(page: nil)]
             return m
         }()
 

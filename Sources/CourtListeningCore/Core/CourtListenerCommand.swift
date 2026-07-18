@@ -1,6 +1,6 @@
 public enum CourtListenerCommand: Sendable, Hashable, Codable {
     case fetchCourt(id: CourtID)
-    case listCourts(cursor: Cursor?)
+    case listCourts(page: Int?)
     case fetchDocket(id: DocketID)
     case searchDockets(query: DocketQuery)
     case fetchCluster(id: ClusterID)

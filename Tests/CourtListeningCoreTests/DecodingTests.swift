@@ -136,6 +136,44 @@ final class DecodingTests: XCTestCase {
         let court = try decoder.decode(Court.self, from: data)
         XCTAssertEqual(court.jurisdiction, .unknown)
     }
+
+    // MARK: - parties-list.json (real shape: no top-level `docket`)
+
+    /// Regression guard: the live /parties/ response has NO top-level `docket` key
+    /// (it lives under `party_types[]`). A required `docket: URL` field would throw
+    /// `keyNotFound` here — every party decode would fail.
+    func testPartiesListDecodesWithoutTopLevelDocket() throws {
+        let data = try fixture("parties-list")
+        let response = try decoder.decode(PaginatedResponse<Party>.self, from: data)
+        XCTAssertEqual(response.results.count, 2)
+        let first = try XCTUnwrap(response.results.first)
+        XCTAssertEqual(first.id, try PartyID(4001))
+        XCTAssertEqual(first.name, "United States of America")
+    }
+
+    func testPartiesListCountIsDeferred() throws {
+        let data = try fixture("parties-list")
+        let response = try decoder.decode(PaginatedResponse<Party>.self, from: data)
+        guard case .deferred = response.count else {
+            return XCTFail("parties is a cursor endpoint; count should be .deferred, got \(response.count)")
+        }
+    }
+
+    // MARK: - Enum raw values (verified live via OPTIONS)
+
+    /// Raw values are the API's `value` field, not the `display_name`. "Separate" and
+    /// "Relating-to" previously used display_names and silently decoded as `.unknown`.
+    func testPrecedentialStatusDecodesAPIValues() throws {
+        let data = Data("[\"Published\",\"Separate\",\"Relating-to\",\"In-chambers\",\"Non-Precedential\"]".utf8)
+        let statuses = try decoder.decode([PrecedentialStatus].self, from: data)
+        XCTAssertEqual(statuses, [.published, .separateOpinion, .relatingTo, .inChambers, .unknown])
+    }
+
+    func testOpinionTypeDecodesTrialCourtAndRealMisspelling() throws {
+        let data = Data("[\"100trialcourt\",\"015unamimous\",\"010combined\"]".utf8)
+        let types = try decoder.decode([OpinionType].self, from: data)
+        XCTAssertEqual(types, [.trialCourtDocument, .unanimous, .combined])
+    }
 }
 
 // MARK: - Helpers

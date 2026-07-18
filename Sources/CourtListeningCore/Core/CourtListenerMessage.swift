@@ -10,7 +10,8 @@ public enum CourtListenerMessage: Sendable {
     // MARK: - Intent messages (sent by callers)
 
     case fetchCourt(CourtID)
-    case listCourts(cursor: Cursor?)
+    // /courts/ is page-based (?page=N), not cursor-based — see Endpoints.courts(page:).
+    case listCourts(page: Int?)
     case fetchDocket(DocketID)
     case searchDockets(DocketQuery)
     case fetchCluster(ClusterID)

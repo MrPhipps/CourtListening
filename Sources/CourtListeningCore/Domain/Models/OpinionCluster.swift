@@ -41,14 +41,14 @@ public struct OpinionCluster: Sendable, Codable, Hashable {
 }
 
 public enum PrecedentialStatus: String, Codable, Sendable, Hashable, CaseIterable {
+    // Raw values are the API's `value` field (verified live via OPTIONS on /clusters/),
+    // NOT the human-facing `display_name` (e.g. value "Separate" displays as "Separate Opinion").
     case published = "Published"
     case unpublished = "Unpublished"
     case errata = "Errata"
-    case separateOpinion = "Separate Opinion"
+    case separateOpinion = "Separate"
     case inChambers = "In-chambers"
-    case lawReviewAndJournals = "Relating-to orders"
-    case precedential = "Precedential"
-    case nonPrecedential = "Non-Precedential"
+    case relatingTo = "Relating-to"
     case unknown
 
     public init(from decoder: any Decoder) throws {
