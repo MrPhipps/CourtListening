@@ -1,0 +1,41 @@
+{
+  "count": "https://www.courtlistener.com/api/rest/v4/parties/?docket=4214664&count=on",
+  "next": "https://www.courtlistener.com/api/rest/v4/parties/?cursor=cD00MDAy&docket=4214664",
+  "previous": null,
+  "results": [
+    {
+      "resource_uri": "https://www.courtlistener.com/api/rest/v4/parties/4001/",
+      "id": 4001,
+      "name": "United States of America",
+      "extra_info": "",
+      "date_created": "2021-03-18T12:00:00Z",
+      "date_modified": "2021-03-18T12:00:00Z",
+      "attorneys": [],
+      "party_types": [
+        {
+          "docket": "https://www.courtlistener.com/api/rest/v4/dockets/4214664/",
+          "name": "Plaintiff",
+          "date_terminated": null,
+          "extra_info": ""
+        }
+      ]
+    },
+    {
+      "resource_uri": "https://www.courtlistener.com/api/rest/v4/parties/4002/",
+      "id": 4002,
+      "name": "John Q. Defendant",
+      "extra_info": "",
+      "date_created": "2021-03-18T12:00:00Z",
+      "date_modified": "2021-03-18T12:00:00Z",
+      "attorneys": [],
+      "party_types": [
+        {
+          "docket": "https://www.courtlistener.com/api/rest/v4/dockets/4214664/",
+          "name": "Defendant",
+          "date_terminated": "2022-01-05",
+          "extra_info": ""
+        }
+      ]
+    }
+  ]
+}
